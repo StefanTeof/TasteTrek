@@ -40,10 +40,6 @@ const userSchema = new mongoose.Schema({
     city: {
         type: String
     },
-    // notifications: [{
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Notification',
-    // }],
     googleId: {
         type: String,
         unique: true,

@@ -1,4 +1,6 @@
-const Recipe = require('../models/Recipe')
+const mongoose = require('mongoose');
+const Recipe = require('../models/Recipe');
+const User = require('../models/User');
 
 //Get Requests
 const getAllRecipes = async(req, res) => {
@@ -11,16 +13,53 @@ const getAllRecipes = async(req, res) => {
     }
 }
 
+const getFavoriteRecipes = async(req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try{
+        const isLoggedIn = req.user;
+        if(!isLoggedIn){
+            return res.status(503).json({err: "User not found"});
+        }
+
+        const user = await User.findById(req.user._id).populate('favorites').exec();
+
+        if(!user){
+            return res.status(503).json({err: "User not found"});
+        }
+
+        const favorites = user.favorites;
+
+        await session.commitTransaction();
+        session.endSession();
+
+        res.status(200).json({favorites: favorites, msg: "Successful getting favorite recipe"});
+
+    }catch(err){
+        console.error("Error in getting favorite recipes", err);
+        return res.status(500).json({err: "Internal server error"});
+
+    }
+
+}
+
 
 // Post Requests
 const addRecipe = async(req, res) => {
     try{
-        const {name} = req.body;
+        const user = req.user;
+        if(!user){
+            return res.status(503).json({err: "User have to be logged in for this action."})
+        }
+        const {name, description, image, ingredients} = req.body;
         if(!name || typeof name !== 'string' ){
             return res.status(503).json({err: "Invalid name"});
         };
         const newRecipe = new Recipe({
-            name : name
+            name : name,
+            description : description ? description : "",
+            image : image ? image : "",
+            ingredients : ingredients ? ingredients : []
         })
 
         await newRecipe.save();
@@ -31,7 +70,12 @@ const addRecipe = async(req, res) => {
 }
 
 const editRecipe = async (req,res)=>{
+    // TODO: Check if the logged in user has the recipe in their list
     try{
+        const user = req.user;
+        if(!user){
+            return res.status(503).json({err: "User have to be logged in for this action."})
+        }
         const id=req.headers['id']
         const recipe=Recipe.findById(id)
         if(!recipe){
@@ -50,15 +94,72 @@ const editRecipe = async (req,res)=>{
     }
 }
 
+const addRecipeToFavorites = async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try{
+        const isLoggedIn = req.user;
+        if(!isLoggedIn) {
+            return res.status(503).json({err: "User have to be logged in for this action."});
+        }
+
+        const user = await User.findById(req.user._id);
+
+        const recipe = await Recipe.findById(req.body.recipeId);
+
+        if(!recipe){
+            return res.status(404).json({err:"Recipe was not found."})
+        }
+
+        user.favorites.push(recipe._id);
+
+        user.save();
+                    
+        await session.commitTransaction();
+        session.endSession();
+
+        return res.status(200).json({msg :"Successfully added to favorites"})
+    }catch(err){
+        console.log("Error while adding recipe to favorites: ", err);
+        return res.status(500).json({err: "Internal server error"}); 
+    }
+}
+
+
+// Delete requests
 const deleteRecipe = async (req,res) => {
     try{
-        const id=req.headers['id']
-        const deletedRecipe= await Recipe.findByIdAndDelete(id)
-        if(deletedRecipe){
-            return res.status(200).json({err:"Successfully deleted"})
-        }else{
-            res.status(404).json({ message: 'Recipe not found' });
+        const session = await mongoose.startSession();
+        session.startTransaction();
+
+        const isLoggedIn = req.user;
+        if(!isLoggedIn){
+            return res.status(503).json({err: "User have to be logged in for this action."})
         }
+
+        const user = await User.findById(req.user._id).populate('recipes').exec(); 
+
+        if(!user){
+            return res.status(503).json({err: "The user does not exists"});
+        }
+        const id=req.headers['id']
+
+        const isRecipePresent = user.recipes.map(recipe => recipe._id).includes(id); // Check if the recipe is in the list of the logged in user recipes
+
+        if(!isRecipePresent){
+            return res.status(503).json({err: "This user does not have such recipe"})
+        }
+                
+        const deletedRecipe= await Recipe.findByIdAndDelete(id)
+        if(!deletedRecipe){
+            return res.status(404).json({err: 'Recipe not found' });
+        }
+        
+        await session.commitTransaction();
+        session.endSession();
+
+        return res.status(200).json({msg :"Successfully deleted"})
 
     }catch(err){
         console.log(err)
@@ -66,4 +167,6 @@ const deleteRecipe = async (req,res) => {
     }
 }
 
-module.exports = {getAllRecipes, addRecipe, editRecipe,deleteRecipe}
+
+
+module.exports = {getAllRecipes, addRecipe, editRecipe,deleteRecipe, addRecipeToFavorites, getFavoriteRecipes};

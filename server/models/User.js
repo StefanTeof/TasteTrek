@@ -44,7 +44,18 @@ const userSchema = new mongoose.Schema({
         type: String,
         unique: true,
         sparse: true,
-    }
+    },
+    // Recipes put in favorites
+    favorites: [{ 
+        type: mongoose.Schema.Types.ObjectId, ref: 'Recipe',
+        default: null
+    }],
+    // Recipes made and uploaded by the user
+    recipes: [{
+        type: mongoose.Schema.Types.ObjectId, ref: 'Recipe',
+        default: null
+    }]
+
 }, {timestamps: true});
 
 const User = mongoose.model('User', userSchema);

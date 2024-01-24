@@ -4,6 +4,7 @@ const passport = require('passport');
 
 const recipesRoute = require('./routes/recipesRoute');
 const usersRoute = require('./routes/users');
+const favoritesRoute = require('./routes/favoritesRoute');
 
 require('dotenv').config();
 require('./config/database');
@@ -17,7 +18,8 @@ app.use(cors());
 app.use(passport.initialize());
 
 app.use('/api/recipes', recipesRoute);
-app.use('/api/users', usersRoute)
+app.use('/api/users', usersRoute);
+app.use('/api/favorites', favoritesRoute);
 
 const PORT = process.env.PORT;
 

@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 const Recipe = require('../models/Recipe');
 const User = require('../models/User');
+const aws = require('../config/awss3');
+const crypto = require('crypto');
+
+
+const { PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
+
 
 //Get Requests
 const getAllRecipes = async(req, res) => {
@@ -49,6 +55,20 @@ const addRecipe = async(req, res) => {
             return res.status(503).json({err: "Invalid name"});
         };
 
+        const imageUrl = req.file.location;
+        const randomImageName = (bytes=32) => crypto.randomBytes(bytes).toString('hex');
+        const imageName = `Avatars/${randomImageName()}`;
+        const params = {
+            Bucket: process.env.BUCKET_NAME,
+            Key: imageName,
+            Body : req.file.buffer,
+            ContentType: req.file.mimetype,
+        }
+
+        const command = new PutObjectCommand(params);
+
+        await aws.s3.send(command);
+
         await User.populate(user, { path: 'recipes' });
 
         if(user.recipes && user.recipes.some(recipe => recipe.name === recipeData.name)){
@@ -58,11 +78,11 @@ const addRecipe = async(req, res) => {
         const newRecipe = new Recipe({
             name : recipeData.name,
             description : recipeData.description,
-            image : recipeData.image ? image : "",
+            image : imageUrl,
             ingredients : recipeData.ingredients,
             calories: recipeData.calories ? recipeData.calories:0,
             carbs: recipeData.carbs ? recipeData.carbs:0,
-            user: req.user._id 
+            user: req.user._id,
         })
 
         await newRecipe.save();

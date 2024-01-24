@@ -10,4 +10,7 @@ router.get('/getFavoriteRecipes', passport.authenticate('user-jwt', {session: fa
 // Post Requests
 router.post('/addRecipeToFavorites', passport.authenticate('user-jwt', {session: false}), favoritesController.addRecipeToFavorites);
 
+// Delete Requests
+router.delete('/removeRecipeFromFavorites', passport.authenticate('user-jwt', {session: false}), favoritesController.removeRecipeFromFavorites);
+
 module.exports = router;

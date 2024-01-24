@@ -66,7 +66,31 @@ const addRecipeToFavorites = async (req, res) => {
     }
 }
 
-// TODO: Add remove from favorites api
+// Delete Requests
+const removeRecipeFromFavorites = async (req, res) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.status(503).json({ err: "User has to be logged in for this action." });
+        }
 
-module.exports = {addRecipeToFavorites, getFavoriteRecipes};
+        const recipeId = req.headers['id'];
+
+        const indexToRemove = user.favorites.indexOf(recipeId);
+        if (indexToRemove !== -1) {
+            user.favorites.splice(indexToRemove, 1);
+            await user.save();
+            return res.status(200).json({ msg: "Recipe removed from favorites" });
+        } else {
+            return res.status(404).json({ err: "Recipe not found in favorites" });
+        }
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ msg: "Error while removing recipe from favorites" });
+    }
+};
+
+
+
+module.exports = {addRecipeToFavorites, getFavoriteRecipes, removeRecipeFromFavorites};
 

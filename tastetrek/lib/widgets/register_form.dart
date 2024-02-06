@@ -1,27 +1,58 @@
 import 'package:flutter/material.dart';
 
-import '../screens/register_screen.dart';
+import '../screens/login_screen.dart';
 
-class LoginFormWidget extends StatelessWidget {
+
+class RegisterFormWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(bottom: 20.0),
       child: Container(
-        margin: EdgeInsets.only(top: 200.0),
+        margin: EdgeInsets.only(top: 100.0),
         child: Container(
           padding: EdgeInsets.all(50.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 20.0, right: 10.0),
+                      child: const TextField(
+                        decoration: InputDecoration(
+                          labelText: 'First Name',
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 20.0, left: 10.0),
+                      child: const TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Last Name',
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               Align(
                 alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 20.0),
-                  child: const TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Username',
-                    ),
+                child: const TextField(
+                  decoration: InputDecoration(
+                    labelText: 'Username',
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: const TextField(
+                  decoration: InputDecoration(
+                    labelText: 'Email',
                   ),
                 ),
               ),
@@ -39,21 +70,21 @@ class LoginFormWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Don't have an account? ",
+                    "Already have an account? ",
                     style: TextStyle(
                       color: Colors.grey,
                     ),
                   ),
                   GestureDetector(
                     onTap: () {
-                      // Handle register link tap
+                      // Handle login link tap
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => RegisterScreen()),
+                        MaterialPageRoute(builder: (context) => LoginScreen()),
                       );
                     },
                     child: Text(
-                      "Register",
+                      "Login",
                       style: TextStyle(
                         color: Colors.orange,
                         fontWeight: FontWeight.bold,
@@ -65,7 +96,7 @@ class LoginFormWidget extends StatelessWidget {
               Spacer(),
               ElevatedButton(
                 onPressed: () {
-                  // Login button press callback
+                  // Register button press callback
                 },
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.all<Color>(Colors.orange),
@@ -80,7 +111,7 @@ class LoginFormWidget extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 70.0, vertical: 25.0),
                   ),
                 ),
-                child: const Text('Login'),
+                child: const Text('Register'),
               ),
             ],
           ),

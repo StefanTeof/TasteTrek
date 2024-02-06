@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../screens/login_screen.dart';
+
 class GetstartedWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -26,6 +28,10 @@ class GetstartedWidget extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     // Button press callback
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginScreen()),
+                    );
                   },
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all<Color>(Colors.orange),

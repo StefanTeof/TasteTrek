@@ -3,8 +3,13 @@ import 'package:http/http.dart' as http;
 import '../screens/login_screen.dart';
 import 'dart:convert';
 import '../screens/recipes_screen.dart'; // Import the RecipesScreen
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 
 class RegisterFormWidget extends StatelessWidget {
+
+  final FlutterSecureStorage _storage = FlutterSecureStorage();
+
   Future<void> _registerUser(BuildContext context, String firstName,
       String lastName, String email, String username, String password) async {
     final String url = 'http://localhost:5000/api/users/register';
@@ -26,6 +31,12 @@ class RegisterFormWidget extends StatelessWidget {
 
       if (response.statusCode == 200) {
         // Successful registration, navigate to RecipesScreen
+
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        final String token = responseData['token'];
+
+        await _saveTokenToSecureStorage(token);
+        
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => RecipesScreen()),
@@ -49,6 +60,11 @@ class RegisterFormWidget extends StatelessWidget {
         ),
       );
     }
+  }
+
+  Future<void> _saveTokenToSecureStorage(String token) async {
+    await _storage.write(key: 'auth_token', value: token);
+    print('Token saved to Flutter Secure Storage: $token');
   }
 
   @override

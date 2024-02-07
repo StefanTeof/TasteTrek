@@ -1,12 +1,18 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 import '../screens/recipes_screen.dart';
 import '../screens/register_screen.dart';
 
 class LoginFormWidget extends StatelessWidget {
+  
+  final FlutterSecureStorage _storage = FlutterSecureStorage();
+
   Future<void> _loginUser(BuildContext context, String username, String password) async {
     final String url = 'http://localhost:5000/api/users/login';
 
@@ -24,6 +30,11 @@ class LoginFormWidget extends StatelessWidget {
 
       if (response.statusCode == 200) {
         // Successful registration, navigate to RecipesScreen
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        final String token = responseData['token'];
+
+        await _saveTokenToSecureStorage(token);
+        
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => RecipesScreen()),
@@ -47,6 +58,11 @@ class LoginFormWidget extends StatelessWidget {
         ),
       );
     }
+  }
+
+  Future<void> _saveTokenToSecureStorage(String token) async {
+    await _storage.write(key: 'auth_token', value: token);
+    print('Token saved to Flutter Secure Storage: $token');
   }
 
   @override
@@ -151,3 +167,10 @@ class LoginFormWidget extends StatelessWidget {
     );
   }
 }
+
+
+// Future<void> _saveTokenToSharedPreferences(String token) async {
+//   final SharedPreferences prefs = await SharedPreferences.getInstance();
+//   prefs.setString('auth_token', token);
+
+// }

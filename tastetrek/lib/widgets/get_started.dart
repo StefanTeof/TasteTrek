@@ -1,8 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../screens/first_screen.dart';
 import '../screens/login_screen.dart';
+import '../screens/recipes_screen.dart';
 
-class GetstartedWidget extends StatelessWidget {
+class GetstartedWidget extends StatefulWidget {
+  @override
+  _GetstartedWidgetState createState() => _GetstartedWidgetState();
+}
+
+class _GetstartedWidgetState extends State<GetstartedWidget> {
+  
+  final FlutterSecureStorage _storage = FlutterSecureStorage();
+  
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus(context);
+  }
+
+  Future<void> _checkLoginStatus(BuildContext context) async {
+    final String? authToken = await _storage.read(key: 'auth_token');
+    
+    if (authToken != null && authToken.isNotEmpty) {
+      // User is already logged in, navigate to RecipesScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => RecipesScreen()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

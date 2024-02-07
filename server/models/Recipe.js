@@ -12,6 +12,10 @@ const recipeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    instructions: {
+        type: String,
+        required: true
+    },
     image: {
         type: String // TODO: add aws3 bucket to upload images
         // required: true
@@ -30,6 +34,17 @@ const recipeSchema = new mongoose.Schema({
     carbs: {
         type: Number,
     },
+    proteins: {
+        type: Number,
+    },
+    fats: {
+        type: Number,
+    },
+    category: {
+        type: String,
+        enum: ['Appetizers','Entrees','Sides','Desserts','Beverages', 'All'],
+        default: "All"
+    }
     // TODO: Add type (breakfast, lunch, dinner, snack..), Add type 2 (sweat, sour, normal), Add type 3 (healthy, burgers.. ), More types if needed
 }, {timestamps: true});
 

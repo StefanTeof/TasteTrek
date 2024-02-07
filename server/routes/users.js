@@ -35,12 +35,19 @@ router.post('/register', async (req, res) => {
                 password: hashedPassword,
             });
 
-            await newUser.save();
+            const savedUser = await newUser.save();
 
             await session.commitTransaction();
             session.endSession();
+            
+            const payload = {
+                username: savedUser.username,
+                id: savedUser._id
+            }   
 
-            return res.status(200).json({ msg: 'User Registered Successfuly' });
+            const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: "30d" });
+
+            return res.status(200).json({ msg: 'User Registered Successfuly', token: "Bearer " + token });
         }
     } catch (err) {
         await session.abortTransaction();

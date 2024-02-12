@@ -54,7 +54,13 @@ const userSchema = new mongoose.Schema({
     recipes: [{
         type: mongoose.Schema.Types.ObjectId, ref: 'Recipe',
         default: null
-    }]
+    }],
+    image: {
+        type: String
+    },
+    location: {
+        type: String
+    }
 
 }, {timestamps: true});
 

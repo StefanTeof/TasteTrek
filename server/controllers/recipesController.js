@@ -39,6 +39,27 @@ const getRecipesByUser = async(req, res) => {
     }
 }
 
+const getRecipeById = async(req, res) => {
+    try{
+        const recipeId = req.headers['id'];
+        const recipe = await Recipe.findById(recipeId);
+        
+        if(!recipe){
+            return res.status(503).json({err: "Recipe not found."})
+        }
+
+        let isRecipeBySameUser = false;
+        if(req.user){
+            isRecipeBySameUser = req.user._id.toString() === recipe.user.toString();    
+        }
+        
+        return res.status(200).json({recipe: recipe, isRecipeBySameUser: isRecipeBySameUser});
+    }catch(err){
+        console.log("Error while getting recipes by user: ", err);
+        return res.status(500).json({err: err});
+    }
+}
+
 
 // Post Requests
 const addRecipe = async(req, res) => {
@@ -75,13 +96,18 @@ const addRecipe = async(req, res) => {
             return res.status(409).json({err: `This recipe already exists`});
         }
 
+        const ingredientList = recipeData.ingredients.split(',');
+
         const newRecipe = new Recipe({
             name : recipeData.name,
             description : recipeData.description,
             image : imageUrl,
-            ingredients : recipeData.ingredients,
+            ingredients : ingredientList,
+            instructions: recipeData.instructions,
             calories: recipeData.calories ? recipeData.calories:0,
             carbs: recipeData.carbs ? recipeData.carbs:0,
+            fats: recipeData.fats ? recipeData.fats:0,
+            proteins: recipeData.proteins ? recipeData.proteins:0,
             user: req.user._id,
         })
 
@@ -177,4 +203,4 @@ const deleteRecipe = async (req,res) => {
 
 
 
-module.exports = {getAllRecipes, addRecipe, editRecipe,deleteRecipe, getRecipesByUser};
+module.exports = {getAllRecipes, addRecipe, editRecipe,deleteRecipe, getRecipesByUser, getRecipeById};

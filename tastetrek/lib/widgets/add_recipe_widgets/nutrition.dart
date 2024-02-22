@@ -29,42 +29,47 @@ class _NutritionInfoWidgetState extends State<NutritionInfoWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Nutrition Information:',
-          style: TextStyle(fontSize: 20),
-        ),
-        SizedBox(height: 8),
-        _buildNutritionForm(),
-        SizedBox(height: 50),
-        Container(
-          margin: EdgeInsets.only(bottom: 300.0),
-          child: Center(
-            child: ElevatedButton(
-              onPressed: () {
-                _proceedToNextScreen();
-              },
-              style: ButtonStyle(
-                backgroundColor:
-                    MaterialStateProperty.all<Color>(Colors.orange),
-                foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                textStyle: MaterialStateProperty.all<TextStyle>(
-                  const TextStyle(
-                    fontSize: 25.0,
-                    fontWeight: FontWeight.bold,
+    return SingleChildScrollView(
+      child: Container(
+        height: MediaQuery.of(context).size.height - (Scaffold.of(context).appBarMaxHeight ?? 0) - MediaQuery.of(context).padding.top,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Nutrition Information:',
+              style: TextStyle(fontSize: 20),
+            ),
+            SizedBox(height: 8),
+            _buildNutritionForm(),
+            SizedBox(height: 50),
+            Container(
+              margin: EdgeInsets.only(bottom: 300.0),
+              child: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    _proceedToNextScreen();
+                  },
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.orange),
+                    foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                    textStyle: MaterialStateProperty.all<TextStyle>(
+                      const TextStyle(
+                        fontSize: 25.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                      const EdgeInsets.symmetric(horizontal: 40.0, vertical: 25.0),
+                    ),
                   ),
-                ),
-                padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                  const EdgeInsets.symmetric(horizontal: 40.0, vertical: 25.0),
+                  child: Text('Next'),
                 ),
               ),
-              child: Text('Next'),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 

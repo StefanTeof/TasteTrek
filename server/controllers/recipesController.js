@@ -11,7 +11,7 @@ const { PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 //Get Requests
 const getAllRecipes = async(req, res) => {
     try{
-        const recipes = await Recipe.find({})
+        const recipes = await Recipe.find({}, '_id name description image category')
         return res.status(200).json({recipes: recipes});
     }catch(err){
         console.log("Error while getting all recipes: ", err);
@@ -41,7 +41,7 @@ const getRecipesByUser = async(req, res) => {
 
 const getRecipeById = async(req, res) => {
     try{
-        const recipeId = req.headers['id'];
+        const recipeId = req.params.id;
         const recipe = await Recipe.findById(recipeId);
         
         if(!recipe){

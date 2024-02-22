@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tastetrek/screens/add_recipe_screens/ingredients.dart';
-import 'package:tastetrek/screens/add_recipe_screens/nextscreen.dart';
+// Ensure you have an IngredientsScreen widget defined in the appropriate file
 
 class RecipeInfoInputWidget extends StatefulWidget {
   final Function(Map<String, dynamic>)? onNextPressed;
@@ -14,34 +14,30 @@ class RecipeInfoInputWidget extends StatefulWidget {
 class _RecipeInfoInputWidgetState extends State<RecipeInfoInputWidget> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  String _selectedCategory = 'Any'; // Default category
+  String _selectedCategory = 'Any'; // Default category to 'Any'
+  final _formKey = GlobalKey<FormState>(); // Key for the form
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(50.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 20.0),
-              child: TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: 'Recipe Name'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a recipe name';
-                  }
-                  return null;
-                },
-              ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(labelText: 'Recipe Name'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a recipe name';
+                }
+                return null;
+              },
             ),
-          ),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextFormField(
+            SizedBox(height: 20),
+            TextFormField(
               controller: _descriptionController,
               decoration: InputDecoration(labelText: 'Description'),
               validator: (value) {
@@ -51,49 +47,37 @@ class _RecipeInfoInputWidgetState extends State<RecipeInfoInputWidget> {
                 return null;
               },
             ),
-          ),
-          const SizedBox(height: 20.0),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: DropdownButtonFormField<String>(
+            SizedBox(height: 20),
+            DropdownButtonFormField<String>(
               value: _selectedCategory,
-              onChanged: (String? newValue) {
-                if (newValue != null) {
-                  setState(() {
-                    _selectedCategory = newValue;
-                  });
-                }
+              onChanged: (newValue) {
+                setState(() {
+                  _selectedCategory = newValue!;
+                });
               },
-              items: [
-                'Appetizers',
-                'Entrees',
-                'Sides',
-                'Desserts',
-                'Beverages',
-                'Any'
-              ]
-                  .map<DropdownMenuItem<String>>(
-                    (String value) => DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    ),
-                  )
-                  .toList(),
+              items: <String>['Appetizers', 'Entrees', 'Sides', 'Desserts', 'Beverages', 'Any']
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
               decoration: InputDecoration(labelText: 'Category'),
             ),
-          ),
-          const SizedBox(height: 20.0),
-          Padding(
-            padding:
-                const EdgeInsets.only(top: 50.0), // Use padding for the button
-            child: ElevatedButton(
+            SizedBox(height: 50),
+            ElevatedButton(
               onPressed: () {
-                if (widget.onNextPressed != null) {
-                  widget.onNextPressed!({
-                    'name': _nameController.text,
-                    'description': _descriptionController.text,
-                    'category': _selectedCategory,
-                  });
+                if (_formKey.currentState!.validate()) {
+                  // All fields are valid, proceed with the logic
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Processing Data')));
+                  if (widget.onNextPressed != null) {
+                    widget.onNextPressed!({
+                      'name': _nameController.text,
+                      'description': _descriptionController.text,
+                      'category': _selectedCategory,
+                    });
+                  }
+                  // Navigate to the next screen
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -104,26 +88,25 @@ class _RecipeInfoInputWidgetState extends State<RecipeInfoInputWidget> {
                       ),
                     ),
                   );
+                } else {
+                  // If the form is not valid, show a snackbar or dialog
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Please fill in all fields')));
                 }
               },
               style: ButtonStyle(
-                backgroundColor:
-                    MaterialStateProperty.all<Color>(Colors.orange),
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.orange),
                 foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
                 textStyle: MaterialStateProperty.all<TextStyle>(
-                  const TextStyle(
-                    fontSize: 25.0,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold),
                 ),
                 padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                  const EdgeInsets.symmetric(horizontal: 40.0, vertical: 25.0),
+                  EdgeInsets.symmetric(horizontal: 40.0, vertical: 25.0),
                 ),
               ),
-              child: const Text('Next'),
+              child: Text('Next'),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

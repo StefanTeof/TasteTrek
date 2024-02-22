@@ -108,7 +108,8 @@ class _IngredientsWidgetState extends State<IngredientsWidget> {
   }
 
   void _proceedToNextScreen() {
-    // Pass data to the next screen
+  if (_ingredientList.isNotEmpty) {
+    // If there are ingredients added, proceed to the next screen
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -120,5 +121,14 @@ class _IngredientsWidgetState extends State<IngredientsWidget> {
         ),
       ),
     );
+  } else {
+    // If no ingredients have been added, show a SnackBar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Please add at least one ingredient'),
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
+}
 }

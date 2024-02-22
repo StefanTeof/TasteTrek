@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:tastetrek/screens/add_recipe_screens/nextscreen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:tastetrek/screens/recipes_screen.dart';
 
 class SubmitRecipeWidget extends StatefulWidget {
   final String name;
@@ -39,34 +39,44 @@ class _SubmitRecipeWidgetState extends State<SubmitRecipeWidget> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment:
+          CrossAxisAlignment.center, // Center column contents horizontally
       children: [
         Text(
           'Select Recipe Image:',
           style: TextStyle(fontSize: 20),
+          textAlign: TextAlign.center, // Center the text
         ),
         SizedBox(height: 8),
-        _selectedImage != null
-            ? Image.file(
-                File(_selectedImage!.path),
-                height: 150,
-                width: 150,
-                fit: BoxFit.cover,
-              )
-            : Container(
-                height: 150,
-                width: 150,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
+        Center(
+          // Center the image or icon
+          child: _selectedImage != null
+              ? Image.file(
+                  File(_selectedImage!.path),
+                  height: 150,
+                  width: 150,
+                  fit: BoxFit.cover,
+                )
+              : Container(
+                  height: 150,
+                  width: 150,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                  ),
+                  child: Icon(Icons.image, size: 50, color: Colors.grey),
                 ),
-                child: Icon(Icons.image, size: 50, color: Colors.grey),
-              ),
+        ),
         SizedBox(height: 8),
-        ElevatedButton(
-          onPressed: () {
-            _pickImage();
-          },
-          child: Text('Choose Image'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center, // Center the buttons
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                _showImageSourceSelection(context);
+              },
+              child: Text('Choose Image'),
+            ),
+          ],
         ),
         SizedBox(height: 50),
         Container(
@@ -98,10 +108,8 @@ class _SubmitRecipeWidgetState extends State<SubmitRecipeWidget> {
     );
   }
 
-  void _pickImage() async {
-    final XFile? pickedImage = await _imagePicker.pickImage(
-      source: ImageSource.gallery,
-    );
+  void _pickImage(ImageSource source) async {
+    final XFile? pickedImage = await _imagePicker.pickImage(source: source);
 
     if (pickedImage != null) {
       setState(() {
@@ -110,13 +118,55 @@ class _SubmitRecipeWidgetState extends State<SubmitRecipeWidget> {
     }
   }
 
+  void _showImageSourceSelection(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                  leading: Icon(Icons.photo_library),
+                  title: Text('Gallery'),
+                  onTap: () {
+                    _pickImage(ImageSource.gallery);
+                    Navigator.of(context).pop();
+                  }),
+              ListTile(
+                leading: Icon(Icons.photo_camera),
+                title: Text('Camera'),
+                onTap: () {
+                  _pickImage(ImageSource.camera);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _submitRecipe() async {
+    // Check if an image has been selected
+    if (_selectedImage == null) {
+      // If no image is selected, show a SnackBar with a message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please select an image before submitting.'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return; // Exit the function early
+    }
+
     // Prepare the data for the multi-part form data request
     var request = http.MultipartRequest(
       'POST',
       Uri.parse('http://localhost:5000/api/recipes/addRecipe'),
     );
 
+    // Add all other fields as before
     request.fields['name'] = widget.name;
     request.fields['description'] = widget.description;
     request.fields['category'] = widget.category;
@@ -127,15 +177,13 @@ class _SubmitRecipeWidgetState extends State<SubmitRecipeWidget> {
     request.fields['fats'] = widget.fats;
     request.fields['proteins'] = widget.proteins;
 
-
-    if (_selectedImage != null) {
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'image',
-          _selectedImage!.path,
-        ),
-      );
-    }
+    // Since we've already checked, _selectedImage is guaranteed to be non-null here
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'image',
+        _selectedImage!.path,
+      ),
+    );
 
     // Send the request
     try {
@@ -143,15 +191,19 @@ class _SubmitRecipeWidgetState extends State<SubmitRecipeWidget> {
       if (response.statusCode == 200) {
         // Successfully submitted, handle the response
         print('Recipe submitted successfully!');
-        // TODO: Navigate to success screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => RecipesScreen()),
+        );
       } else {
         // Handle the error response
         print('Failed to submit recipe. Status code: ${response.statusCode}');
-        // Handle the error, show a message or retry
+        // Show a message or retry
       }
     } catch (error) {
       // Handle the exception
       print('Error submitting recipe: $error');
+      // Show a message or retry
     }
   }
 }

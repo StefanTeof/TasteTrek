@@ -109,7 +109,8 @@ class _InstructionsWidgetState extends State<InstructionsWidget> {
   }
 
   void _proceedToNextScreen() {
-    // Pass data to the next screen
+  if (_instructions.trim().isNotEmpty) {
+    // If instructions have been added, proceed to the next screen
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -122,5 +123,14 @@ class _InstructionsWidgetState extends State<InstructionsWidget> {
         ),
       ),
     );
+  } else {
+    // If no instructions have been added, show a SnackBar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Please add at least one instruction'),
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
+}
 }

@@ -6,10 +6,27 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
 const crypto = require('crypto');
+const passport = require('passport');
+
+const userController = require('../controllers/userController');
 
 require('../config/passport');
 require('dotenv').config();
 
+
+// GET Requests
+router.get('/getUser', passport.authenticate('user-jwt', {session: false}), userController.getUser);
+
+// Post Requests
+router.post('/edit', passport.authenticate('user-jwt', {session: false}), (req, res, next) => {
+    if (req.file) {
+      awss3.upload()(req, res, next);
+    } else {
+      next();
+    }
+  }, userController.editUser);
+
+  
 router.post('/register', async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();

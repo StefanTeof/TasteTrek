@@ -8,6 +8,7 @@ const recipesController = require('../controllers/recipesController');
 // GET routes
 router.get('/getAllRecipes', recipesController.getAllRecipes);
 router.get('/getRecipesByUser', passport.authenticate('user-jwt', {session: false}),  recipesController.getRecipesByUser);
+router.get('/getRecipeById/:id', passport.authenticate('user-jwt', {session: false}), recipesController.getRecipeById);
 
 // POST routes
 router.post('/addRecipe', passport.authenticate('user-jwt', {session: false}), aws.upload.single('image'), recipesController.addRecipe);

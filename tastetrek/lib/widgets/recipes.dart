@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tastetrek/screens/single_recipe_screen.dart';
 
+
 void main() {
   runApp(MyApp());
 }
@@ -41,6 +42,7 @@ class RecipeGrid extends StatefulWidget {
 class _RecipeGridState extends State<RecipeGrid> {
   late List<Recipe> recipes = [];
   late List<Recipe> filteredRecipes = [];
+
   TextEditingController searchController = TextEditingController();
   List<String> selectedCategories = [];
 

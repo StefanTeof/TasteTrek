@@ -9,8 +9,7 @@ import '../screens/login_screen.dart';
 
 class MyAppFooter extends StatelessWidget {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
-
-  @override
+@override
   Widget build(BuildContext context) {
     return BottomAppBar(
       child: Row(
@@ -62,6 +61,7 @@ class MyAppFooter extends StatelessWidget {
                   builder: (context) => UserProfileScreen(),
                 ),
               );
+
             },
             icon: Icon(Icons.person),
           ),
@@ -72,6 +72,7 @@ class MyAppFooter extends StatelessWidget {
 
   Future<void> _logout(BuildContext context) async {
     await _storage.delete(key: 'auth_token');
+
 
     await Navigator.pushAndRemoveUntil(
       context,

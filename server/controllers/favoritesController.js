@@ -48,10 +48,12 @@ const addRecipeToFavorites = async (req, res) => {
 
         const user = await User.findById(req.user._id);
 
-        const recipe = await Recipe.findById(req.body.recipeId);
+        const recipe = await Recipe.findById(req.params.id);
+
+        console.log(recipe)
 
         if(!recipe){
-            return res.status(404).json({err:"Recipe was not found."})
+            return res.status(501).json({err:"Recipe was not found."})
         }
 
         user.favorites.push(recipe._id);
@@ -76,7 +78,9 @@ const removeRecipeFromFavorites = async (req, res) => {
             return res.status(503).json({ err: "User has to be logged in for this action." });
         }
 
-        const recipeId = req.headers['id'];
+        const recipeId = req.params.id;
+
+        console.log(recipeId)
 
         const indexToRemove = user.favorites.indexOf(recipeId);
         if (indexToRemove !== -1) {

@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:tastetrek/utils/server_url.dart';
 
 class ProfileWidget extends StatefulWidget {
-  final String userId; // The user ID passed as a parameter
+  final String userId;
 
   const ProfileWidget({Key? key, required this.userId}) : super(key: key);
 
@@ -24,8 +24,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   String? country;
   String? city;
   int recipeCount = 0;
-  List<dynamic> recipes = [];
+  List<Map<String, dynamic>> recipes = [];
   bool isLoading = true;
+  Map<String, bool> favoriteStatuses = {};
 
   @override
   void initState() {
@@ -35,7 +36,6 @@ class _ProfileWidgetState extends State<ProfileWidget> {
 
   Future<void> fetchUserData() async {
     final String? authToken = await _storage.read(key: 'auth_token');
-    print(authToken);
     if (authToken == null) {
       print('Error: Authorization token is missing');
       return;
@@ -51,7 +51,6 @@ class _ProfileWidgetState extends State<ProfileWidget> {
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        print("Response Data Profile: ${responseData}");
         setState(() {
           profileImageUrl = responseData['user']['profileImageUrl'];
           firstName = responseData['user']['firstName'];
@@ -60,10 +59,12 @@ class _ProfileWidgetState extends State<ProfileWidget> {
           bio = responseData['user']['bio'];
           country = responseData['user']['country'];
           city = responseData['user']['city'];
-          recipes = responseData['user']['recipes'] ?? [];
+          recipes = List<Map<String, dynamic>>.from(responseData['user']['recipes'] ?? []);
           recipeCount = recipes.length;
-          isLoading = false;
         });
+
+        // After loading user data, fetch favorite recipes
+        await getFavoriteRecipes();
       } else {
         throw Exception('Failed to load user data');
       }
@@ -72,6 +73,81 @@ class _ProfileWidgetState extends State<ProfileWidget> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> getFavoriteRecipes() async {
+    final String? authToken = await _storage.read(key: 'auth_token');
+    if (authToken == null) {
+      print('Error: Authorization token is missing');
+      return;
+    }
+    try {
+      final response = await http.get(
+        Uri.parse('${getBaseUrl()}api/favorites/getFavoriteRecipes'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": authToken,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final favoriteRecipes = json.decode(response.body)['favorites'];
+
+        print("Favorite Recipes: ${favoriteRecipes}");
+
+        setState(() {
+          // Reset favoriteStatuses
+          favoriteStatuses.clear();
+
+          final List<String> favoriteIds = favoriteRecipes.map<String>((recipe) => recipe['_id'].toString()).toList();
+
+          // Update favoriteStatuses based on the user's favorite recipes
+          for (var recipe in recipes) {
+            favoriteStatuses[recipe['_id']] = favoriteIds.contains(recipe['_id']);
+          }
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load favorite recipes');
+      }
+    } catch (e) {
+      print('Error fetching favorite recipes: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> toggleFavoriteStatus(String recipeId) async {
+    final String? authToken = await _storage.read(key: 'auth_token');
+    if (authToken == null) {
+      print('Error: Authorization token is missing');
+      return;
+    }
+    bool isCurrentlyFavorited = favoriteStatuses[recipeId] ?? false;
+    String endpoint = isCurrentlyFavorited
+        ? 'removeRecipeFromFavorites'
+        : 'addRecipeToFavorites';
+
+    try {
+      final response = await http.post(
+        Uri.parse('${getBaseUrl()}api/favorites/$endpoint/$recipeId'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": authToken,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          favoriteStatuses[recipeId] = !isCurrentlyFavorited;
+        });
+      } else {
+        throw Exception('Failed to toggle favorite status');
+      }
+    } catch (e) {
+      print('Error toggling favorite status: $e');
     }
   }
 
@@ -152,61 +228,35 @@ class _ProfileWidgetState extends State<ProfileWidget> {
               ),
             ),
             SizedBox(height: 16),
-            Center(
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => RecipeListScreen(recipes: recipes),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: recipes.length,
+              itemBuilder: (context, index) {
+                final recipe = recipes[index];
+                final isFavorited = favoriteStatuses[recipe['_id']] ?? false;
+                return Card(
+                  child: ListTile(
+                    leading: recipe['image'] != null && recipe['image'].isNotEmpty
+                        ? Image.network(recipe['image'])
+                        : Icon(Icons.image_not_supported),
+                    title: Text(recipe['name'] ?? ''),
+                    subtitle: Text(recipe['description'] ?? ''),
+                    trailing: IconButton(
+                      icon: Icon(
+                        isFavorited ? Icons.favorite : Icons.favorite_border,
+                        color: isFavorited ? Colors.red : Colors.grey,
+                      ),
+                      onPressed: () {
+                        toggleFavoriteStatus(recipe['_id']);
+                      },
                     ),
-                  );
-                },
-                child: Text(
-                  'View Recipes',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange,
-                    decoration: TextDecoration.underline,
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class RecipeListScreen extends StatelessWidget {
-  final List<dynamic> recipes; // List of recipes
-
-  const RecipeListScreen({Key? key, required this.recipes}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('User Recipes')),
-      body: ListView.builder(
-        itemCount: recipes.length,
-        itemBuilder: (context, index) {
-          final recipe = recipes[index];
-          return Card(
-            child: ListTile(
-              leading: Image.network(recipe['image']),
-              title: Text(recipe['name']),
-              subtitle: Text(recipe['description']),
-              trailing: IconButton(
-                icon: Icon(Icons.favorite_border),
-                onPressed: () {
-                  // Handle like button action
-                },
-              ),
-            ),
-          );
-        },
       ),
     );
   }

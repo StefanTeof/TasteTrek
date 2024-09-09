@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tastetrek/screens/single_recipe_screen.dart';
@@ -10,6 +11,8 @@ class FavoritesWidget extends StatefulWidget {
 }
 
 class _FavoritesWidgetState extends State<FavoritesWidget> {
+  final FlutterSecureStorage _storage = FlutterSecureStorage();
+
   late List<Recipe> favoriteRecipes = [];
   late List<Recipe> filteredRecipes = [];
 
@@ -23,33 +26,48 @@ class _FavoritesWidgetState extends State<FavoritesWidget> {
   }
 
   void fetchFavoriteRecipes() async {
+    final String? authToken = await _storage.read(key: 'auth_token');
+    if (authToken == null) {
+      print('Error: Authorization token is missing');
+      return;
+    }
     try {
       var url = Uri.parse('${getBaseUrl()}api/favorites/getFavoriteRecipes');
-      var response = await http.get(url);
+      var response = await http.get(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": authToken,
+        },
+      );
 
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
-        setState(() {
-          favoriteRecipes =
-              List<Recipe>.from(data['recipes'].map((recipeJson) => Recipe(
-                    id: recipeJson['_id'],
-                    title: recipeJson['name'],
-                    description: recipeJson['description'],
-                    imageUrl: recipeJson['image'],
-                    category: recipeJson['category'],
-                  )));
 
-          filteredRecipes = List.from(favoriteRecipes);
-        });
+        // Ensure 'favorites' exists and is not null
+        if (data != null && data['favorites'] != null) {
+          setState(() {
+            favoriteRecipes = List<Recipe>.from(data['favorites'].map((recipeJson) => Recipe(
+              id: recipeJson['_id'] ?? '',
+              title: recipeJson['name'] ?? '',
+              description: recipeJson['description'] ?? '',
+              imageUrl: recipeJson['image'] ?? '',
+              category: recipeJson['category'] ?? '',
+            )));
+
+            filteredRecipes = List.from(favoriteRecipes);
+          });
+        } else {
+          print('No favorite recipes found in the response.');
+        }
       } else {
         print('Failed to fetch favorite recipes: ${response.statusCode}');
-        // Handle error appropriately
       }
     } catch (err) {
       print('Error while fetching favorite recipes: $err');
-      // Handle error appropriately
     }
   }
+
 
   void filterRecipes(String query) {
     setState(() {

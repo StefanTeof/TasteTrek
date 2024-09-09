@@ -3,6 +3,7 @@ import 'package:tastetrek/widgets/add_recipe_widgets/instructions.dart';
 import 'package:tastetrek/widgets/add_recipe_widgets/nutrition.dart';
 import 'package:tastetrek/widgets/add_recipe_widgets/recipe_image.dart';
 import 'package:tastetrek/widgets/header.dart';
+import 'package:tastetrek/widgets/footer.dart';
 
 class RecipeImageScreen extends StatelessWidget {
   final String name;
@@ -30,7 +31,7 @@ class RecipeImageScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: MyAppHeader(),
+      appBar: MyAppHeader(automaticallyImplyLeading: true),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: SubmitRecipeWidget(
@@ -45,6 +46,7 @@ class RecipeImageScreen extends StatelessWidget {
           proteins: proteins,
         ),
       ),
+      bottomNavigationBar: MyAppFooter(),
     );
   }
 }

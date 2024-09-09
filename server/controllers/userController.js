@@ -23,6 +23,21 @@ const getUser = async (req, res) => {
 };
 
 
+const getUserWithRecipes = async (req, res) => {
+    try {
+        
+        const userId = req.params.id;
+          
+        const user = await User.findById(userId).select('-password').populate('recipes');
+
+        return res.status(200).json({ user })
+    }catch(err) {
+        console.log("Error while getting user with recipes", err);
+        return res.statue(500).json({ err })
+    }
+}
+
+
 // Post requests
 
 const editUser = async (req, res) => {
@@ -80,4 +95,4 @@ const editUser = async (req, res) => {
 };
 
 
-module.exports = { getUser, editUser }
+module.exports = { getUser, getUserWithRecipes, editUser }

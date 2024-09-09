@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:tastetrek/screens/profile_screen.dart';
+import 'package:tastetrek/utils/server_url.dart';
 
 class Recipe {
   final String name;
@@ -14,7 +16,8 @@ class Recipe {
   final int fats;
   final int proteins;
   final String imageUrl;
-  final bool isRecipeBySameUser;
+  final String userId;
+  final String username;
 
   Recipe({
     required this.name,
@@ -27,7 +30,8 @@ class Recipe {
     required this.carbs,
     required this.fats,
     required this.proteins,
-    required this.isRecipeBySameUser,
+    required this.userId,
+    required this.username,
   });
 
   factory Recipe.fromJson(Map<String, dynamic> json) {
@@ -35,14 +39,17 @@ class Recipe {
       name: json['name'],
       description: json['description'],
       category: json['category'],
-      ingredientList: json['ingredients'] != null ? List<String>.from(json['ingredients']) : [],
+      ingredientList: json['ingredients'] != null
+          ? List<String>.from(json['ingredients'])
+          : [],
       instructions: json['instructions'],
       calories: json['calories'],
       carbs: json['carbs'],
       fats: json['fats'],
       proteins: json['proteins'],
       imageUrl: json['image'],
-      isRecipeBySameUser: json['isRecipeBySameUser'] ?? false,
+      userId: json['user']['_id'],
+      username: json['user']['username'],
     );
   }
 }
@@ -58,6 +65,7 @@ class RecipeDetailWidget extends StatefulWidget {
 
 class _RecipeDetailWidgetState extends State<RecipeDetailWidget> {
   Recipe? recipe;
+  bool isRecipeBySameUser = false;
 
   @override
   void initState() {
@@ -68,26 +76,22 @@ class _RecipeDetailWidgetState extends State<RecipeDetailWidget> {
   void fetchRecipe() async {
     const storage = FlutterSecureStorage();
     String? token = await storage.read(key: "auth_token");
-    print(token);
     var response = await http.get(
-      Uri.parse(
-          'http://localhost:5000/api/recipes/getRecipeById/${widget.recipeId}'),
+      Uri.parse('${getBaseUrl()}api/recipes/getRecipeById/${widget.recipeId}'),
       headers: {
         "Content-Type": "application/json",
         "Authorization": token!,
       },
     );
 
-    print(response.statusCode);
-
     if (response.statusCode == 200) {
       var responseData = json.decode(response.body);
-      var recipeData =
-          responseData['recipe'];
-      print('Recipe Data: $recipeData');
+      var recipeData = responseData['recipe'];
+
       setState(() {
-        recipe = Recipe.fromJson(
-            recipeData); // Pass the extracted recipe object to fromJson
+        recipe = Recipe.fromJson(recipeData);
+        isRecipeBySameUser = responseData['isRecipeBySameUser'];
+        print("Is recipe by same user: ${isRecipeBySameUser}");
       });
     } else {
       throw Exception('Failed to load recipe: ${response.statusCode}');
@@ -96,18 +100,18 @@ class _RecipeDetailWidgetState extends State<RecipeDetailWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Check if recipe data is still loading or has been loaded.
     if (recipe == null) {
-      // Data is still loading
       return Scaffold(
         appBar: AppBar(
           title: Text('Loading Recipe...'),
+          automaticallyImplyLeading: false,
         ),
         body: Center(child: CircularProgressIndicator()),
       );
     } else {
-      // Data has been loaded, display the recipe details
       return Scaffold(
+        appBar: AppBar(
+            title: Text('Recipe Details'), automaticallyImplyLeading: false),
         body: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,9 +124,41 @@ class _RecipeDetailWidgetState extends State<RecipeDetailWidget> {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  recipe!.name,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      recipe!.name,
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    if (isRecipeBySameUser) // Check using the updated variable
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () {
+                          // Navigate to the Edit Recipe screen
+                        },
+                      ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  // Navigate to user's profile
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProfileScreen(
+                          userId: recipe!.userId),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    '@${recipe!.username}',
+                    style: TextStyle(fontSize: 20, color: Colors.deepOrange),
+                  ),
                 ),
               ),
               Padding(
@@ -134,9 +170,40 @@ class _RecipeDetailWidgetState extends State<RecipeDetailWidget> {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Nutrition per 100g: Calories: ${recipe!.calories}, Carbs: ${recipe!.carbs}g, Fats: ${recipe!.fats}g, Proteins: ${recipe!.proteins}g',
-                  style: TextStyle(fontSize: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade100, // Light orange background
+                    borderRadius: BorderRadius.circular(
+                        12), // Rounded corners for outer border
+                    border: Border.all(
+                      color: Colors.black, // Black border
+                      width: 1,
+                    ),
+                  ),
+                  padding: const EdgeInsets.all(8.0),
+                  child: Table(
+                    border: TableBorder(
+                      horizontalInside:
+                          BorderSide(color: Colors.black, width: 1),
+                      verticalInside: BorderSide(color: Colors.black, width: 1),
+                    ),
+                    children: [
+                      TableRow(
+                        children: [
+                          _buildNutritionCell(
+                              'Calories', '${recipe!.calories}'),
+                          _buildNutritionCell('Carbs', '${recipe!.carbs}g'),
+                        ],
+                      ),
+                      TableRow(
+                        children: [
+                          _buildNutritionCell('Fats', '${recipe!.fats}g'),
+                          _buildNutritionCell(
+                              'Proteins', '${recipe!.proteins}g'),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Padding(
@@ -175,5 +242,24 @@ class _RecipeDetailWidgetState extends State<RecipeDetailWidget> {
         ),
       );
     }
+  }
+
+  Widget _buildNutritionCell(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            value,
+            style: TextStyle(fontSize: 16),
+          ),
+        ],
+      ),
+    );
   }
 }

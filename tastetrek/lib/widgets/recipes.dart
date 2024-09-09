@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tastetrek/screens/single_recipe_screen.dart';
+import '../utils/server_url.dart';
 
 
 void main() {
@@ -54,7 +55,7 @@ class _RecipeGridState extends State<RecipeGrid> {
 
   void fetchRecipes() async {
     try {
-      var url = Uri.parse('http://localhost:5000/api/recipes/getAllRecipes');
+      var url = Uri.parse('${getBaseUrl()}api/recipes/getAllRecipes');
       var response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -133,6 +134,7 @@ class _RecipeGridState extends State<RecipeGrid> {
               icon: Icon(Icons.filter_list),
             ),
           ],
+          automaticallyImplyLeading: false,
         ),
         body: Column(
           children: [

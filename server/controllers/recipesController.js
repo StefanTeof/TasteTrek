@@ -42,7 +42,7 @@ const getRecipesByUser = async(req, res) => {
 const getRecipeById = async(req, res) => {
     try{
         const recipeId = req.params.id;
-        const recipe = await Recipe.findById(recipeId);
+        const recipe = await Recipe.findById(recipeId).populate('user', 'username');
         
         if(!recipe){
             return res.status(503).json({err: "Recipe not found."})
@@ -50,9 +50,8 @@ const getRecipeById = async(req, res) => {
 
         let isRecipeBySameUser = false;
         if(req.user){
-            isRecipeBySameUser = req.user._id.toString() === recipe.user.toString();    
+            isRecipeBySameUser = req.user._id.toString() === recipe.user._id.toString();    
         }
-        
         return res.status(200).json({recipe: recipe, isRecipeBySameUser: isRecipeBySameUser});
     }catch(err){
         console.log("Error while getting recipes by user: ", err);
@@ -76,6 +75,8 @@ const addRecipe = async(req, res) => {
             return res.status(503).json({err: "Invalid name"});
         };
 
+        console.log("Recipe Data: ", recipeData)
+
         const imageUrl = req.file.location;
         const randomImageName = (bytes=32) => crypto.randomBytes(bytes).toString('hex');
         const imageName = `Avatars/${randomImageName()}`;
@@ -96,7 +97,8 @@ const addRecipe = async(req, res) => {
             return res.status(409).json({err: `This recipe already exists`});
         }
 
-        const ingredientList = recipeData.ingredients.split(',');
+        console.log("Recipe data ingredient list: ", recipeData.ingredientList)
+        const ingredientList = recipeData.ingredientList.split(';');
 
         const newRecipe = new Recipe({
             name : recipeData.name,

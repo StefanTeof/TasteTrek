@@ -108,27 +108,27 @@ class _IngredientsWidgetState extends State<IngredientsWidget> {
   }
 
   void _proceedToNextScreen() {
-  if (_ingredientList.isNotEmpty) {
-    // If there are ingredients added, proceed to the next screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => InstructionsScreen(
-          name: widget.name,
-          description: widget.description,
-          category: widget.category,
-          ingredientList: _ingredientList,
+    if (_ingredientList.isNotEmpty) {
+      // If there are ingredients added, proceed to the next screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => InstructionsScreen(
+            name: widget.name,
+            description: widget.description,
+            category: widget.category,
+            ingredientList: _ingredientList,
+          ),
         ),
-      ),
-    );
-  } else {
-    // If no ingredients have been added, show a SnackBar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Please add at least one ingredient'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+      );
+    } else {
+      // If no ingredients have been added, show a SnackBar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please add at least one ingredient'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
-}
 }

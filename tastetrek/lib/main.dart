@@ -5,6 +5,8 @@ import 'package:tastetrek/widgets/questions.dart';
 import 'package:tastetrek/widgets/recipes.dart';
 import 'screens/first_screen.dart';
 import 'screens/login_screen.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 
 // void main() {
 //   runApp(const MyApp());
@@ -28,6 +30,7 @@ import 'screens/login_screen.dart';
 // }
 
 void main() {
+  // await dotenv.load();
   runApp(MyApp());
 }
 

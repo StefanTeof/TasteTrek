@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:tastetrek/utils/server_url.dart';
 import '../screens/login_screen.dart';
 import 'dart:convert';
-import '../screens/recipes_screen.dart'; // Import the RecipesScreen
+import '../screens/recipes_screen.dart'; 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 
@@ -12,7 +13,7 @@ class RegisterFormWidget extends StatelessWidget {
 
   Future<void> _registerUser(BuildContext context, String firstName,
       String lastName, String email, String username, String password) async {
-    final String url = 'http://localhost:5000/api/users/register';
+    final String url = '${getBaseUrl()}api/users/register';
 
     try {
       final response = await http.post(

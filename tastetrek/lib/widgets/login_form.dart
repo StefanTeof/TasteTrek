@@ -5,13 +5,17 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../screens/recipes_screen.dart';
 import '../screens/register_screen.dart';
+import '../utils/server_url.dart';
+
 
 class LoginFormWidget extends StatelessWidget {
   
   final FlutterSecureStorage _storage = FlutterSecureStorage();
 
   Future<void> _loginUser(BuildContext context, String username, String password) async {
-    final String url = 'http://localhost:5000/api/users/login';
+    final String url = '${getBaseUrl()}api/users/login';
+
+    print(url);
 
     try {
       final response = await http.post(

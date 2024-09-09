@@ -16,6 +16,7 @@ require('dotenv').config();
 
 // GET Requests
 router.get('/getUser', passport.authenticate('user-jwt', {session: false}), userController.getUser);
+router.get('/getUserWithRecipes/:id', passport.authenticate('user-jwt', {session: false}), userController.getUserWithRecipes);
 
 // Post Requests
 router.post('/edit', passport.authenticate('user-jwt', {session: false}), (req, res, next) => {

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:tastetrek/screens/add_recipe_screens/name_description.dart';
 import 'package:tastetrek/screens/recipes_screen.dart';
 import 'package:tastetrek/screens/user_profile_screen.dart';
+import 'package:tastetrek/screens/favorites_screen.dart';
 
 import '../screens/login_screen.dart';
 
@@ -30,6 +31,12 @@ class MyAppFooter extends StatelessWidget {
           IconButton(
             onPressed: () {
               // Navigate to favorites page
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FavoritesScreen(),
+                )
+              );
             },
             icon: Icon(Icons.favorite),
           ),

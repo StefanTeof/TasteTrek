@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Recipe = require('../models/Recipe');
 const User = require('../models/User');
 
+// Get Requests
 
 const getFavoriteRecipes = async(req, res) => {
     const session = await mongoose.startSession();
@@ -33,6 +34,7 @@ const getFavoriteRecipes = async(req, res) => {
 
 }
 
+// Post Requets
 
 const addRecipeToFavorites = async (req, res) => {
     const session = await mongoose.startSession();

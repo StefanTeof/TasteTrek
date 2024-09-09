@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:tastetrek/screens/recipes_screen.dart';
+import 'package:tastetrek/utils/server_url.dart';
 
 class SubmitRecipeWidget extends StatefulWidget {
   final String name;
@@ -33,6 +35,7 @@ class SubmitRecipeWidget extends StatefulWidget {
 }
 
 class _SubmitRecipeWidgetState extends State<SubmitRecipeWidget> {
+  final FlutterSecureStorage _storage = FlutterSecureStorage();
   final ImagePicker _imagePicker = ImagePicker();
   XFile? _selectedImage;
 
@@ -148,6 +151,7 @@ class _SubmitRecipeWidgetState extends State<SubmitRecipeWidget> {
   }
 
   void _submitRecipe() async {
+
     // Check if an image has been selected
     if (_selectedImage == null) {
       // If no image is selected, show a SnackBar with a message
@@ -163,14 +167,18 @@ class _SubmitRecipeWidgetState extends State<SubmitRecipeWidget> {
     // Prepare the data for the multi-part form data request
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://localhost:5000/api/recipes/addRecipe'),
+      Uri.parse('${getBaseUrl()}api/recipes/addRecipe'),
     );
 
     // Add all other fields as before
+    final authToken = await _storage.read(key: 'auth_token') ?? '';;
+    print(authToken);
+    // Replace with your actual token
+    request.headers['Authorization'] = authToken;
     request.fields['name'] = widget.name;
     request.fields['description'] = widget.description;
     request.fields['category'] = widget.category;
-    request.fields['ingredientList'] = widget.ingredientList.join(',');
+    request.fields['ingredientList'] = widget.ingredientList.join(';');
     request.fields['instructions'] = widget.instructions;
     request.fields['calories'] = widget.calories;
     request.fields['carbs'] = widget.carbs;

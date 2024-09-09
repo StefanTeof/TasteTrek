@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tastetrek/screens/add_recipe_screens/instructions.dart';
 import 'package:tastetrek/widgets/add_recipe_widgets/ingredients.dart';
 import 'package:tastetrek/widgets/header.dart';
+import 'package:tastetrek/widgets/footer.dart';
 
 
 class IngredientsScreen extends StatelessWidget {
@@ -18,7 +19,7 @@ class IngredientsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
      return Scaffold(
-      appBar: MyAppHeader(),
+      appBar: MyAppHeader(automaticallyImplyLeading: true),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: IngredientsWidget(
@@ -27,7 +28,8 @@ class IngredientsScreen extends StatelessWidget {
           category: category,
         ),
       ),
-    );
+       bottomNavigationBar: MyAppFooter(),
+     );
 
   }
 }

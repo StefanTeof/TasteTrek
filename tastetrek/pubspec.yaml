@@ -52,6 +52,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+  flutter_dotenv: ^5.0.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -65,8 +66,11 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-assets:
-  - assets/tracetrek_logo.png
+  assets:
+    - assets/
+    - assets/logo.png
+    - assets/tastetrek_logo_transparent.png
+    - assets/account.png
 
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

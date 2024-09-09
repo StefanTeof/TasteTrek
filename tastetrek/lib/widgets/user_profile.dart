@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:location/location.dart';
+import 'package:tastetrek/utils/server_url.dart';
 
 
 class UserProfileWidget extends StatefulWidget {
@@ -50,7 +51,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
   }
 
   Future<void> _getUser() async {
-    final String url = 'http://localhost:5000/api/users/getUser';
+    final String url = '${getBaseUrl()}api/users/getUser';
 
     try {
       final response = await http.get(
@@ -84,7 +85,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
   }
 
   Future<void> _editUser() async {
-    final String url = 'http://localhost:5000/api/users/editUser';
+    final String url = '${getBaseUrl()}api/users/editUser';
 
     try {
       var request = http.MultipartRequest('POST', Uri.parse(url))

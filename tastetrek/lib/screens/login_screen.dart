@@ -7,11 +7,12 @@ class LoginScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Image.asset(
-          '../assets/tastetrek_logo_transparent.png',
+          'assets/tastetrek_logo_transparent.png',
           width: 250,
           height: 300,
         ),
         toolbarHeight: 100,
+        automaticallyImplyLeading: false,
       ),
       body: Center(
         child: LoginFormWidget(),

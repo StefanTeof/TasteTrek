@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../utils/server_url.dart';
 
 class RecipeService {
-  final String baseUrl = 'http://localhost:5000/api/recipes';
+  final String baseUrl = '${getBaseUrl()}api/recipes';
 
   Future<void> addRecipe(List<Map<String, dynamic>> recipes, String authToken) async {
      for (var recipeData in recipes) {
@@ -16,7 +17,7 @@ class RecipeService {
 
 
     final http.Response response = await http.post(
-      Uri.parse('$baseUrl/addRecipe'),
+      Uri.parse('${getBaseUrl()}/addRecipe'),
       headers: <String, String>{
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $authToken',

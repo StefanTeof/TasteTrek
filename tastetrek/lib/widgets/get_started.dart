@@ -39,13 +39,14 @@ class _GetstartedWidgetState extends State<GetstartedWidget> {
       home: Scaffold(
         appBar: AppBar(
           title: Text(''),
+          automaticallyImplyLeading: false,
         ),
         body: Column(
           children: [
             Expanded(
               child: Center(
                 child: Image.asset(
-                  '../assets/tastetrek_logo_transparent.png',
+                  'assets/tastetrek_logo_transparent.png',
                   width: 300,
                   height: 300,
                 ),
